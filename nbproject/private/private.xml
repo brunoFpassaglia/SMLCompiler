@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/entradas/lexicoErros1_2.sml</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/entradas/lexicoErros1_2_1.sml</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/src/tree/GeneralNode.java</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/src/parser/SMLCompiler.java</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/src/tree/PrefixDeclNode.java</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/entradas/SemanticErrors1.sml</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/src/tree/VisionBodyNode.java</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/entradas/lexicoErros1.sml</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/src/tree/ListNode.java</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/src/tree/VisionClauseNode.java</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/entradas/SyntaticErrors1_1_1.sml</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/entradas/SyntaticErrors1_1.sml</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/entradas/mappingIDH_scovo_1name.sml</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/src/tree/VariableDeclNode.java</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/src/tree/PrintTree.java</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/entradas/SyntaticErrors1.sml</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/src/parser/JavaccFile.jj</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/src/tree/StatementNode.java</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/entradas/SemanticErrors1_1.sml</file>
+            <file>file:/D:/Faculdade/TCC/SMLCompiler/src/SymbolTable/EntryPref.java</file>
+        </group>
+    </open-files>
+</project-private>

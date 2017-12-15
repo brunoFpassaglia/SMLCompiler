@@ -1,0 +1,357 @@
+options{
+STATIC = false;
+DEBUG_LOOKAHEAD = true;
+}
+
+PARSER_BEGIN(SMLCompiler)
+package parser;
+import java.io.*;
+import tree.*;
+
+public class SMLCompiler {
+    final static String Version = "SMLCompiler 1.0 - Bruno Passaglia - 2017";
+    boolean Menosshort = false;
+    int countParseError = 0;
+    boolean debug_recovery = true;
+    
+    public static void main(String args[]) throws ParseException {
+        String filename = "D:/Faculdade/TCC/SMLCompiler/entradas/mappingIDH_scovo_1name.sml";
+        SMLCompiler parser;
+        int i;
+        boolean ms = false;
+        System.out.println(Version);
+        boolean debug_as = false;
+        boolean print_tree = true;
+        
+        
+        try{
+            parser = new SMLCompiler(new java.io.FileInputStream(filename));
+        }
+        catch(java.io.FileNotFoundException e){
+            System.out.println("arquivo não encontrado");
+            return;            
+        }
+        //parser.disable_tracing();
+        parser.Menosshort = ms;
+        
+        ListNode root = null;
+        try{
+            root = parser.smlprogram();
+        }
+        catch(ParseException e){
+            System.err.println(e.getMessage());
+            parser.countParseError = 1;
+        }
+        finally{
+            System.out.println(parser.token_source.foundLexErrors() + " Lexical Errors found");
+            System.out.println(parser.countParseError + " Syntactic Errors found");
+        }
+        if(parser.token_source.foundLexErrors() + parser.countParseError==0){
+            PrintTree prt = new PrintTree();
+            prt.printRoot(root);
+        }
+    }
+    
+    static public String im(int x){
+        int k;
+        String s;
+        s = tokenImage[x];
+        k = s.lastIndexOf("\"");
+        try{
+            s = s.substring(1, k);
+        }catch(StringIndexOutOfBoundsException e){
+            
+        }
+        return s;
+    }
+    boolean eof;
+    
+}
+
+PARSER_END(SMLCompiler)
+
+TOKEN_MGR_DECLS :
+{
+    int countLexErrors = 0;
+
+    public int foundLexErrors(){
+        return countLexErrors;
+    }
+}
+
+
+/*O que deve ser ignorado*/
+SKIP :
+{
+    < "#" (~["\r", "\n"])* >
+    | " "
+    | "\t"
+    | "\n"
+    | "\r"
+}
+
+/*Palavras reservadas da linguagem*/
+TOKEN :
+{
+    < PREFIX: "PREFIX" >
+|    < CREATE: "CREATE" >
+|    < VIEW: "VIEW" >
+|    < AS: "As" >
+|    < CONSTRUCT: "Construct" >
+|    < WITH: "WITH" >
+|    < STR: "str" >
+|    < CONCAT: "concat" >
+|    < BNODE: "bnode" >
+|    < URI: "uri" >
+|    < PLAINLITERAL: "plainLiteral" >
+|    < TYPEDLITERAL: "typedLiteral" >
+|    < URLENCODE: "urlEncode" >
+}
+
+/*símbolos especiais*/
+TOKEN :
+{
+    < OPENPAREN: "(" >
+|    < CLOSEPAREN: ")" >
+|    < OPENBRACE: "{" >
+|    < CLOSEBRACE: "}" >
+|    < QUESTIONMARK: "?" >
+|    < SEMICOLON: ";">
+|    < DOT: "." >
+|    < COMMA: "," >
+|    < COLON: ":" >
+|   < ASSIGN: "=" >
+}
+
+/*Constantes*/
+TOKEN :
+{
+    < STRING: "\'"(~["\n","\r", "\'"])*"\'" >
+}
+
+
+/*Identificadores*/
+TOKEN :
+{
+    < IDENT: <LETTER>(<LETTER>|<DIGIT>|"_")* >
+|       < #LETTER: ["A" - "Z", "a" - "z"] >
+|       < #DIGIT: ["0" - "9"] >
+|       < #NUMBER: (<DIGIT>)+ >
+|   < VARIAVEL: "?" (<IDENT>|<NUMBER>) >
+|   < ENDERECO: "<" (~["\r", "\n"])* ">" > 
+}
+
+SPECIAL_TOKEN :
+{
+    <INVALID_LEXICAL: 
+        (~ ["a"-"z", "A"-"Z",
+        "0"-"9",
+        "\"",
+        "(",
+        ")",
+        "[",
+        "]",
+        "{",
+        "}",
+        ";",
+        ",",
+        ".",
+        "=",
+        ">",
+        "<",
+        "+",
+        "-",
+        "/",
+        " ",
+        "\t",
+        "\n",
+        "\r",
+        "\f"
+      ])+>
+         {
+          System.err.println("Line " + input_stream.getEndLine() + " - Invalid string found: " + image);
+          countLexErrors++;
+         }
+      |
+         <INVALID_CONST: 
+         "\'" (~ ["\n","\r","\'"])* ["\n","\r"]>
+         {
+          System.err.println("Line " + input_stream.getEndLine() + " - String constant has a \\n: " + image);
+          countLexErrors++;
+         }
+
+}
+
+ListNode smlprogram() :
+{
+    ListNode l = null;
+    VisionClauseNode v = null;
+}
+{
+        [[l = prefixlist()] v = visionclause() [withclause()]] <EOF>
+        {return new ListNode(v, l);}
+}
+
+ListNode prefixlist() :
+{
+    PrefixDeclNode p = null;
+    ListNode l = null;
+    
+}
+{
+   p = prefixdecl() [l = prefixlist()]
+    {return new ListNode(p, l);}
+}
+
+PrefixDeclNode prefixdecl() :
+{
+    Token t1 = null, t2 = null;
+}
+{
+    t1 = <PREFIX> t2 = <IDENT> <COLON> <ENDERECO>
+    {return new PrefixDeclNode(t1, t2);}
+}
+
+VisionClauseNode visionclause() :
+{
+
+    Token t2 = null;
+    VisionBodyNode vb = null;
+}
+{
+    <CREATE> <VIEW> t2 = <IDENT> <AS> <CONSTRUCT> vb = visionbody()   //gerar erro sintático reconhecendo apenas um identificador como nome da visão
+    {return new VisionClauseNode(t2, vb);}
+
+}
+
+VisionBodyNode visionbody() :
+{
+    ListNode l = null;
+    Token t = null;
+}
+{
+    t = <OPENBRACE>
+        l = variablelist()
+    <CLOSEBRACE>
+    {return new VisionBodyNode(t, l);}
+}
+
+ListNode variablelist():
+{
+    VariableDeclNode vd = null;
+    ListNode vl = null;
+}
+{
+    vd = variabledecl() [vl = variablelist()]
+    {return new ListNode(vd, vl);}
+}
+
+VariableDeclNode variabledecl():
+{
+    Token t1 = null;
+    ListNode stl = null;
+}
+{
+    t1 = <VARIAVEL> stl = statementlist()  <DOT>
+    {return new VariableDeclNode(t1, stl);}
+}
+
+ListNode statementlist():
+{
+    StatementNode sn = null;
+    ListNode sl = null;
+}
+{
+    sn = statement() [<SEMICOLON> sl = statementlist()]
+    {return new ListNode(sn, sl);}
+}
+
+StatementNode statement() :  //seguindo o formato turtle
+{
+    Token t1 = null;
+    Token t2 = null;
+}
+{
+    t1 = <IDENT> <COLON> <IDENT> ((t2 = <IDENT> <COLON> <IDENT>) | <VARIAVEL>)
+    {return new StatementNode(t1, t2);}
+}
+
+void withclause() :
+{
+}
+{
+    <WITH> variabledefinitionlist()
+}
+
+void variabledefinitionlist() :
+{
+}
+{
+    variabledefinition() [variabledefinitionlist()]
+}
+
+void variabledefinition() :
+{
+}
+{
+    <VARIAVEL> <ASSIGN> termoctorexp()
+}
+
+void termoctorexp() :
+{
+}
+{
+    (<BNODE> | <URI>) <OPENPAREN> expression() [<COMMA> expressionlist()] <CLOSEPAREN> |
+    (<PLAINLITERAL> | <TYPEDLITERAL>) <OPENPAREN> expression() <CLOSEPAREN>
+}
+
+void expressionlist() :
+{
+}
+{
+    expression() [<COMMA> expressionlist()]
+}
+
+void expression() :
+{
+}
+{
+    <VARIAVEL> | 
+    <STR> <OPENPAREN> expression() <CLOSEPAREN> |
+    <CONCAT> <OPENPAREN> expression() [<COMMA> expressionlist()] <CLOSEPAREN> |
+    <URLENCODE> <OPENPAREN> expression() <CLOSEPAREN> |
+    iriqname() |
+    <STRING>
+    
+}
+
+void iriqname() :
+{
+}
+{
+    <ENDERECO> | <IDENT> <COLON> expression()
+}    
+
+JAVACODE void program()
+{
+Token t;
+    do
+    {
+    t = getNextToken();
+    Token st = t;
+        while ( st.specialToken != null)
+        st = st.specialToken;
+        do {
+           if ( Menosshort )
+          System.out.println(st.image + "  " + 
+                                 im(st.kind) + " " +
+                                 st.kind);
+           else
+              System.out.println("Linha: " + st.beginLine + 
+                                 " Coluna: " + st.beginColumn + 
+                                 " " + st.image +
+                                 "  " + im(st.kind) + "  "+t.kind);
+          st = st.next;       
+        } while (st != t.next);
+    } while (t.kind != SMLCompilerConstants.EOF);  
+}
